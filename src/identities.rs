@@ -1,6 +1,8 @@
 use core::num::Wrapping;
 use core::ops::{Add, Mul};
 
+use static_assertions::assert_obj_safe;
+
 /// Defines an additive identity element for `Self`.
 ///
 /// # Laws
@@ -9,7 +11,7 @@ use core::ops::{Add, Mul};
 /// a + 0 = a       ∀ a ∈ Self
 /// 0 + a = a       ∀ a ∈ Self
 /// ```
-pub trait Zero: Sized + Add<Self, Output = Self> {
+pub trait Zero {
     /// Returns the additive identity element of `Self`, `0`.
     /// # Purity
     ///
@@ -17,7 +19,7 @@ pub trait Zero: Sized + Add<Self, Output = Self> {
     /// external mutable state, for example values stored in TLS or in
     /// `static mut`s.
     // This cannot be an associated constant, because of bignums.
-    fn zero() -> Self;
+    fn zero() -> Self where Self: Sized;
 
     /// Sets `self` to the additive identity element of `Self`, `0`.
     fn set_zero(&mut self) {
@@ -27,6 +29,8 @@ pub trait Zero: Sized + Add<Self, Output = Self> {
     /// Returns `true` if `self` is equal to the additive identity.
     fn is_zero(&self) -> bool;
 }
+
+assert_obj_safe!(Zero);
 
 macro_rules! zero_impl {
     ($t:ty, $v:expr) => {
@@ -85,7 +89,7 @@ where
 /// a * 1 = a       ∀ a ∈ Self
 /// 1 * a = a       ∀ a ∈ Self
 /// ```
-pub trait One: Sized + Mul<Self, Output = Self> {
+pub trait One {
     /// Returns the multiplicative identity element of `Self`, `1`.
     ///
     /// # Purity
@@ -94,7 +98,7 @@ pub trait One: Sized + Mul<Self, Output = Self> {
     /// external mutable state, for example values stored in TLS or in
     /// `static mut`s.
     // This cannot be an associated constant, because of bignums.
-    fn one() -> Self;
+    fn one() -> Self where Self: Sized;
 
     /// Sets `self` to the multiplicative identity element of `Self`, `1`.
     fn set_one(&mut self) {
@@ -109,11 +113,13 @@ pub trait One: Sized + Mul<Self, Output = Self> {
     #[inline]
     fn is_one(&self) -> bool
     where
-        Self: PartialEq,
+        Self: Sized + PartialEq,
     {
         *self == Self::one()
     }
 }
+
+assert_obj_safe!(One);
 
 macro_rules! one_impl {
     ($t:ty, $v:expr) => {
